@@ -192,21 +192,24 @@ function render(){
     if(oc&&oc[1]===sortK)th.classList.add(sortD===-1?'desc':'asc');
   });
   const rows=filtered.slice(0,3000).map(d=>{
-    const url=`https://m.stock.naver.com/domestic/stock/${d.stock_code}/overview`;
     const isFav=favs.has(d.stock_code);
     const bothPos=isBothPos(d,view);
+    const naverUrl='https://m.stock.naver.com/domestic/stock/'+d.stock_code+'/overview';
     const qcells=QS.map((q,i)=>{
       const g=i===4?' class="grp-sep"':'';
-      return`<td${g}>${fmt(d[view][q])}</td>`;
+      return'<td'+(i===4?' class="grp-sep"':'')+'>'+fmt(d[view][q])+'</td>';
     }).join('');
     const bothBadge=bothPos?'<span class="both-badge">↑↑</span>':'';
-    return`<tr${bothPos?' class="both-pos"':''}>
-<td><span class="star${isFav?' on':''}" onclick="toggleFav('${d.stock_code}',this,event)">${isFav?'⭐':'☆'}</span><a class="corp-link" href="${url}" target="_blank" rel="noopener">${d.corp_name}</a>${bothBadge}</td>
-<td style="color:#94a3b8">${d.stock_code}</td>
-<td><span class="badge ${d.market.toLowerCase()}">${d.market}</span></td>
-${qcells}
-<td class="grp-sep">${fmtP(d[view+'_qoq'])}</td>
-<td>${fmtP(d[view+'_yoy'])}</td></tr>`;
+    const starCls='star'+(isFav?' on':'');
+    const starIcon=isFav?'⭐':'☆';
+    return'<tr'+(bothPos?' class="both-pos"':'')+'>'+
+'<td><span class="'+starCls+'" onclick="toggleFav("'+d.stock_code+'",this,event)">'+starIcon+'</span>'+
+'<a class="corp-link" href="'+naverUrl+'" target="_blank" rel="noopener">'+d.corp_name+'</a>'+bothBadge+'</td>'+
+'<td style="color:#94a3b8">'+d.stock_code+'</td>'+
+'<td><span class="badge '+d.market.toLowerCase()+'">'+d.market+'</span></td>'+
+qcells+
+'<td class="grp-sep">'+fmtP(d[view+'_qoq'])+'</td>'+
+'<td>'+fmtP(d[view+'_yoy'])+'</td></tr>';
   }).join('');
   document.getElementById('tbody').innerHTML=rows;
   document.getElementById('stat').textContent=
