@@ -83,19 +83,6 @@ a.corp-link:hover{color:#2563eb;text-decoration:underline}
     <div class="vtab on" onclick="setView('rev',this)">매출액</div>
     <div class="vtab"    onclick="setView('pft',this)">영업이익</div>
   </div>
-  <select class="ctrl-el" id="qs">
-    <option value="">⬆⬇ 빠른 정렬</option>
-    <optgroup label="── 매출액 ──">
-      <option value="rev_yoy,-1">전년동기대비 ↑ 높은 순</option>
-      <option value="rev_qoq,-1">전분기대비 ↑ 높은 순</option>
-      <option value="rev.2026Q1,-1">2026Q1 매출 큰 순</option>
-    </optgroup>
-    <optgroup label="── 영업이익 ──">
-      <option value="pft_yoy,-1">전년동기대비 ↑ 높은 순</option>
-      <option value="pft_qoq,-1">전분기대비 ↑ 높은 순</option>
-      <option value="pft.2026Q1,-1">2026Q1 영업이익 큰 순</option>
-    </optgroup>
-  </select>
 </div>
 <div class="stat" id="stat"></div>
 <div class="wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
@@ -170,14 +157,6 @@ function thSort(k){
   filtered.sort(function(a,b){ return cmpFn(a,b,k,sortD); });
   render();
 }
-function quickSort(v){
-  if(!v) return;
-  var idx = v.lastIndexOf(",");
-  sortK = v.slice(0,idx); sortD = parseInt(v.slice(idx+1));
-  filtered.sort(function(a,b){ return cmpFn(a,b,sortK,sortD); });
-  render();
-}
-
 // ── 필터 ──────────────────────────────────────────────────────
 function setMarket(m){
   market = m;
@@ -351,7 +330,6 @@ document.getElementById("token-modal").addEventListener("click", function(e){
   if(e.target === this) hideTokenModal();
 });
 document.getElementById("search").addEventListener("input", applyFilter);
-document.getElementById("qs").addEventListener("change", function(){ quickSort(this.value); this.value=""; });
 
 updateFavCount();
 updateBothCount();
