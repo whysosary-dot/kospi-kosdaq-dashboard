@@ -149,7 +149,7 @@ function render(){
     if(oc&&oc[1]===sortK)th.classList.add(sortD===-1?'desc':'asc');
   });
   const rows=filtered.slice(0,3000).map(d=>{
-    const url=`https://finance.naver.com/item/main.naver?code=${d.stock_code}`;
+    const url=`https://m.stock.naver.com/domestic/stock/${d.stock_code}/overview`;
     const qcells=QS.map((q,i)=>{
       const g=i===4?' class="grp-sep"':'';
       return`<td${g}>${fmt(d[view][q])}</td>`;
