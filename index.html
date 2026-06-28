@@ -48,6 +48,8 @@ tr:hover td{background:#f0f9ff}
 .kospi{background:#dbeafe;color:#1d4ed8}.kosdaq{background:#d1fae5;color:#065f46}
 a.corp-link{color:#1e293b;text-decoration:none;font-weight:500}
 a.corp-link:hover{color:#2563eb;text-decoration:underline}
+.dart-link{color:#64748b;text-decoration:none;font-size:.8rem}
+a.dart-link:hover{color:#e85c0d;text-decoration:underline}
 .star{cursor:pointer;font-size:.85rem;margin-right:3px;opacity:.2;transition:.15s;user-select:none}
 .star:hover{opacity:.6}.star.on{opacity:1}
 .both-badge{font-size:.68rem;color:#16a34a;font-weight:700;margin-left:3px}
@@ -230,7 +232,8 @@ function render(){
     rows += '<a class="corp-link" href="' + naverUrl + '" target="_blank" rel="noopener">' + d.corp_name + "</a>";
     if(bothPos) rows += '<span class="both-badge">↑↑</span>';
     rows += "</td>";
-    rows += '<td class="tc">' + d.stock_code + "</td>";
+    var dartUrl = "https://dart.fss.or.kr/dsab007/main.do?autoSearch=Y&option=corp&textCrpNm=" + encodeURIComponent(d.corp_name);
+    rows += '<td class="tc"><a class="dart-link" href="' + dartUrl + '" target="_blank" rel="noopener">' + d.stock_code + "</a></td>";
     rows += '<td><span class="badge ' + d.market.toLowerCase() + '">' + d.market + "</span></td>";
     QS.forEach(function(q, qi){
       rows += '<td' + (qi===4 ? ' class="grp-sep"' : "") + ">" + fmt(d[view][q]) + "</td>";
