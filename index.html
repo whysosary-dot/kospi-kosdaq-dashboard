@@ -21,11 +21,13 @@ h1 small{font-size:.78rem;font-weight:400;color:#94a3b8}
 .sync-status.ok{color:#16a34a}
 .sync-status.err{color:#dc2626}
 .sync-status.loading{color:#2563eb}
-.ctrl{padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border-bottom:1px solid #e2e8f0}
-input,select{background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:6px 11px;border-radius:6px;font-size:.82rem;outline:none}
+.ctrl{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fff;border-bottom:1px solid #e2e8f0}
+input,select,.tab,.vtab,.btn{height:32px;line-height:1;vertical-align:middle;font-size:.82rem;border-radius:6px;border:1px solid #cbd5e1;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap}
+input,select{background:#f1f5f9;color:#1e293b;outline:none}
 input:focus,select:focus{border-color:#3b82f6;background:#fff}
-.tabs,.vtabs{display:flex;gap:3px}
-.tab,.vtab{padding:6px 13px;border-radius:6px;cursor:pointer;background:#f1f5f9;border:1px solid #cbd5e1;font-size:.82rem;color:#64748b;transition:.12s;white-space:nowrap}
+select{padding-right:6px;cursor:pointer}
+.tabs,.vtabs{display:flex;gap:3px;align-items:center}
+.tab,.vtab{cursor:pointer;background:#f1f5f9;color:#64748b;transition:.12s;user-select:none}
 .tab:hover,.vtab:hover{color:#1e293b;border-color:#94a3b8}
 .tab.on{background:#2563eb;border-color:#2563eb;color:#fff}
 .vtab.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
