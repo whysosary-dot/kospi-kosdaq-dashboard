@@ -241,7 +241,7 @@ function render(){
     var d = slice[i];
     var isFav = favs.has(d.stock_code);
     var bothPos = isBothPos(d, view);
-    var naverUrl = "https://m.stock.naver.com/domestic/stock/" + d.stock_code + "/overview";
+    var naverUrl = "https://m.stock.naver.com/domestic/stock/" + d.stock_code + "/total";
     rows += '<tr' + (bothPos ? ' class="both-pos"' : "") + ">";
     rows += '<td><span class="star' + (isFav ? " on" : "") + '" data-code="' + d.stock_code + '">' + (isFav ? "⭐" : "☆") + "</span>";
     rows += '<a class="corp-link" href="' + naverUrl + '" target="_blank" rel="noopener">' + d.corp_name + "</a>";
