@@ -114,6 +114,44 @@ let favs = new Set(JSON.parse(localStorage.getItem("dart_favs") || "[]"));
 // ── 즐겨찾기 ──────────────────────────────────────────────────
 function isBothPos(d,v){ return d[v+"_qoq"] > 0 && d[v+"_yoy"] > 0; }
 function saveFavs(){ localStorage.setItem("dart_favs", JSON.stringify([...favs])); updateFavCount(); }
+
+// ── 상태 저장/복원 ────────────────────────────────────────────
+function saveState(){
+  var s = JSON.parse(localStorage.getItem("dart_state") || "{}");
+  s.market = market; s.view = view; s.sortK = sortK; s.sortD = sortD;
+  s.search = document.getElementById("search").value;
+  localStorage.setItem("dart_state", JSON.stringify(s));
+}
+window.addEventListener("pagehide", function(){
+  var s = JSON.parse(localStorage.getItem("dart_state") || "{}");
+  s.scrollY = window.scrollY;
+  localStorage.setItem("dart_state", JSON.stringify(s));
+});
+function restoreState(){
+  var s = JSON.parse(localStorage.getItem("dart_state") || "null");
+  if(!s) return 0;
+  if(s.search) document.getElementById("search").value = s.search;
+  if(s.sortK){ sortK = s.sortK; sortD = s.sortD || -1; }
+  if(s.view){
+    view = s.view;
+    document.querySelectorAll(".vtab").forEach(function(t){ t.classList.remove("on"); });
+    document.querySelectorAll(".vtab").forEach(function(t){
+      var oc = t.getAttribute("onclick") || "";
+      if(oc.indexOf("'" + s.view + "'") !== -1) t.classList.add("on");
+    });
+  }
+  if(s.market){
+    market = s.market;
+    var cls = {ALL:"on",KOSPI:"on",KOSDAQ:"on",FAV:"fav-on",BOTH:"both-on"};
+    ["ALL","KOSPI","KOSDAQ","FAV","BOTH"].forEach(function(id){
+      var el = document.getElementById("tab-" + id);
+      if(!el) return;
+      el.classList.remove("on","fav-on","both-on");
+      if(id === s.market) el.classList.add(cls[s.market] || "on");
+    });
+  }
+  return s.scrollY || 0;
+}
 function updateFavCount(){
   var el = document.getElementById("fav-count");
   if(el) el.textContent = favs.size > 0 ? "(" + favs.size + ")" : "";
@@ -158,6 +196,7 @@ function thSort(k){
   if(sortK === k) sortD *= -1; else { sortK = k; sortD = -1; }
   filtered.sort(function(a,b){ return cmpFn(a,b,k,sortD); });
   render();
+  saveState();
 }
 // ── 필터 ──────────────────────────────────────────────────────
 function setMarket(m){
@@ -170,6 +209,7 @@ function setMarket(m){
     if(id === m) el.classList.add(cls[m]);
   });
   applyFilter();
+  saveState();
 }
 function setView(v, el){
   view = v;
@@ -177,6 +217,7 @@ function setView(v, el){
   el.classList.add("on");
   updateBothCount();
   if(market === "BOTH") applyFilter(); else render();
+  saveState();
 }
 function applyFilter(){
   var q = document.getElementById("search").value.toLowerCase();
@@ -332,11 +373,13 @@ function saveTokenAndClose(){
 document.getElementById("token-modal").addEventListener("click", function(e){
   if(e.target === this) hideTokenModal();
 });
-document.getElementById("search").addEventListener("input", applyFilter);
+document.getElementById("search").addEventListener("input", function(){ applyFilter(); saveState(); });
 
 updateFavCount();
 updateBothCount();
+var _savedScrollY = restoreState();
 applyFilter();
+if(_savedScrollY) setTimeout(function(){ window.scrollTo(0, _savedScrollY); }, 100);
 autoLoadFavs();
 
 </script>
