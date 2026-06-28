@@ -62,8 +62,7 @@ a.corp-link:hover{color:#2563eb;text-decoration:underline}
   <h1>📊 KOSPI/KOSDAQ 5분기 실적 <small>2025Q1 ~ 2026Q1 · DART 공시 기준</small></h1>
   <div class="sync-row">
     <span class="sync-status" id="sync-status"></span>
-    <button class="ctrl-el" onclick="syncFavs('pull')" title="다른 기기에서 저장한 즐겨찾기 불러오기">☁️↓ 불러오기</button>
-    <button class="ctrl-el" onclick="syncFavs('push')" title="현재 즐겨찾기를 GitHub에 저장">☁️↑ 저장</button>
+    <button class="ctrl-el" onclick="syncFavs()" title="현재 즐겨찾기를 GitHub에 저장">☁️↑ 저장</button>
     <button class="ctrl-el" onclick="showTokenModal()" title="GitHub 토큰 설정">⚙️</button>
   </div>
 </header>
@@ -353,6 +352,7 @@ document.getElementById("qs").addEventListener("change", function(){ quickSort(t
 updateFavCount();
 updateBothCount();
 applyFilter();
+autoLoadFavs();
 
 </script>
 </body>
