@@ -22,12 +22,12 @@ h1 small{font-size:.78rem;font-weight:400;color:#94a3b8}
 .sync-status.err{color:#dc2626}
 .sync-status.loading{color:#2563eb}
 .ctrl{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fff;border-bottom:1px solid #e2e8f0}
-input,select,.tab,.vtab,.btn{height:32px;line-height:1;vertical-align:middle;font-size:.82rem;border-radius:6px;border:1px solid #cbd5e1;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap}
-input,select{background:#f1f5f9;color:#1e293b;outline:none}
-input:focus,select:focus{border-color:#3b82f6;background:#fff}
-select{padding-right:6px;cursor:pointer}
+.ctrl input,.ctrl select,.tab,.vtab,.btn{box-sizing:border-box;height:32px;font-size:.82rem;border-radius:6px;border:1px solid #cbd5e1;padding:0 12px;line-height:32px;white-space:nowrap;vertical-align:middle}
+.ctrl input,.ctrl select{background:#f1f5f9;color:#1e293b;outline:none;display:inline-block}
+.ctrl input:focus,.ctrl select:focus{border-color:#3b82f6;background:#fff}
+.ctrl select{padding-right:4px;cursor:pointer}
 .tabs,.vtabs{display:flex;gap:3px;align-items:center}
-.tab,.vtab{cursor:pointer;background:#f1f5f9;color:#64748b;transition:.12s;user-select:none}
+.tab,.vtab{cursor:pointer;background:#f1f5f9;color:#64748b;transition:.12s;user-select:none;display:inline-block;text-align:center}
 .tab:hover,.vtab:hover{color:#1e293b;border-color:#94a3b8}
 .tab.on{background:#2563eb;border-color:#2563eb;color:#fff}
 .vtab.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
@@ -93,16 +93,12 @@ a.corp-link:hover{color:#2563eb;text-decoration:underline}
     <option value="">⬆⬇ 빠른 정렬</option>
     <optgroup label="── 매출액 ──">
       <option value="rev_yoy,-1">전년동기대비 ↑ 높은 순</option>
-      <option value="rev_yoy,1">전년동기대비 ↓ 낮은 순</option>
       <option value="rev_qoq,-1">전분기대비 ↑ 높은 순</option>
-      <option value="rev_qoq,1">전분기대비 ↓ 낮은 순</option>
       <option value="rev.2026Q1,-1">2026Q1 매출 큰 순</option>
     </optgroup>
     <optgroup label="── 영업이익 ──">
       <option value="pft_yoy,-1">전년동기대비 ↑ 높은 순</option>
-      <option value="pft_yoy,1">전년동기대비 ↓ 낮은 순</option>
       <option value="pft_qoq,-1">전분기대비 ↑ 높은 순</option>
-      <option value="pft_qoq,1">전분기대비 ↓ 낮은 순</option>
       <option value="pft.2026Q1,-1">2026Q1 영업이익 큰 순</option>
     </optgroup>
   </select>
