@@ -313,7 +313,7 @@ var GH_REPO  = "kospi-kosdaq-dashboard";
 var GH_FILE  = "favs.json";
 var GH_API   = "https://api.github.com/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + GH_FILE;
 
-function getToken(){ return localStorage.getItem("dart_gh_token") || ""; }
+function getToken(){ return localStorage.getItem("dart_gh_token") || localStorage.getItem("sv_github_pat") || ""; }
 function saveToken(t){ localStorage.setItem("dart_gh_token", t); }
 
 function setSyncStatus(state, msg){
@@ -339,16 +339,38 @@ async function ghPut(content64, sha){
 function b64enc(str){ return btoa(unescape(encodeURIComponent(str))); }
 function b64dec(str){ return decodeURIComponent(escape(atob(str))); }
 
+async function ghPushCore(){
+  if(!getToken()) throw new Error("PAT 미설정");
+  var remote = await ghGet();
+  var sha = remote ? remote.sha : undefined;
+  await ghPut(b64enc(JSON.stringify([...favs])), sha);
+}
+
+/* ── Stock Valuation 대시보드 통합 커밋 (iframe 내장 시) ── */
+(function(){
+  if (window.self === window.top) return;
+  // 대시보드 탭 안에서는 자체 저장 버튼 숨김 (통합 버튼으로 일원화)
+  var _pb=document.querySelector("button[onclick=\"syncFavs('push')\"]"); if(_pb) _pb.style.display="none";
+  window.addEventListener("message", async function(e){
+    if (e.origin !== "https://whysosary-dot.github.io" || !e.data || !e.data.type) return;
+    if (e.data.type === "sv-ping"){ e.source.postMessage({type:"sv-pong", repo:"kospi-kosdaq-dashboard"}, e.origin); return; }
+    if (e.data.type !== "sv-commit") return;
+    var ok=true, msg="커밋 완료";
+    try { await ghPushCore(); }
+    catch(err){ ok=false; msg=err.message||String(err); }
+    e.source.postMessage({type:"sv-commit-result", repo:"kospi-kosdaq-dashboard", ok:ok, msg:msg}, e.origin);
+  });
+})();
+
 async function syncFavs(direction){
   if(!getToken()){ showTokenModal(); return; }
   setSyncStatus("loading", direction === "push" ? "업로드 중…" : "다운로드 중…");
   try{
-    var remote = await ghGet();
     if(direction === "push"){
-      var sha = remote ? remote.sha : undefined;
-      await ghPut(b64enc(JSON.stringify([...favs])), sha);
+      await ghPushCore();
       setSyncStatus("ok", "☁️ 업로드 완료");
     } else {
+      var remote = await ghGet();
       if(!remote){ setSyncStatus("ok","원격 데이터 없음"); return; }
       var remoteFavs = JSON.parse(b64dec(remote.content.replace(/\n/g,"")));
       favs = new Set(remoteFavs);
