@@ -52,6 +52,7 @@ a.corp-link:hover{color:#2563eb;text-decoration:underline}
 a.dart-link:hover{color:#e85c0d;text-decoration:underline}
 .star{cursor:pointer;font-size:.85rem;margin-right:3px;opacity:.2;transition:.15s;user-select:none}
 .star:hover{opacity:.6}.star.on{opacity:1}
+.study-chk{margin:0 5px 0 0;vertical-align:middle;cursor:pointer;width:14px;height:14px;accent-color:#2563eb;flex:none}
 .both-badge{font-size:.68rem;color:#16a34a;font-weight:700;margin-left:3px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
 .modal{background:#fff;border-radius:12px;padding:24px;width:min(480px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.2)}
@@ -110,6 +111,10 @@ const D = [{"corp_code":"00113562","corp_name":"롯데손해보험","stock_code"
 const QS = ["2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"];
 let filtered = [...D], market = "ALL", view = "rev", sortK = null, sortD = -1;
 let favs = new Set(JSON.parse(localStorage.getItem("dart_favs") || "[]"));
+// ── 공부함 체크 (studied) ──────────────────────────────────────
+const STUDIED_SEED = ["329180","005930","000660","402340","034730","267250","010130","259960","003230","278470","067310","080220","082740","071970","319660","131290","017960","019210","089970","064760","095340","045100","095610","074600","008490","008770","083450","084370","142210","033160","194700","417840","263750","440110","125020","039830","458870","036570","031330","290650","037460","222040","353200","254490","252990"];
+let studied = new Set(JSON.parse(localStorage.getItem("dart_studied") || "null") || STUDIED_SEED);
+function saveStudied(){ localStorage.setItem("dart_studied", JSON.stringify([...studied])); }
 
 // ── 즐겨찾기 ──────────────────────────────────────────────────
 function isBothPos(d,v){ return d[v+"_qoq"] > 0 && d[v+"_yoy"] > 0; }
@@ -269,7 +274,9 @@ function render(){
     var bothPos = isBothPos(d, view);
     var naverUrl = "https://m.stock.naver.com/domestic/stock/" + d.stock_code + "/total";
     rows += '<tr' + (bothPos ? ' class="both-pos"' : "") + ">";
-    rows += '<td><span class="star' + (isFav ? " on" : "") + '" data-code="' + d.stock_code + '">' + (isFav ? "⭐" : "☆") + "</span>";
+    var isStudied = studied.has(d.stock_code);
+    rows += '<td><input type="checkbox" class="study-chk"' + (isStudied ? " checked" : "") + ' data-code="' + d.stock_code + '" title="공부함 체크">';
+    rows += '<span class="star' + (isFav ? " on" : "") + '" data-code="' + d.stock_code + '">' + (isFav ? "⭐" : "☆") + "</span>";
     rows += '<a class="corp-link" href="' + naverUrl + '" target="_blank" rel="noopener">' + d.corp_name + "</a>";
     if(bothPos) rows += '<span class="both-badge">↑↑</span>';
     rows += "</td>";
@@ -292,6 +299,14 @@ function render(){
 
 // ── 이벤트 위임 ───────────────────────────────────────────────
 document.addEventListener("click", function(e){
+  // 공부함 체크박스
+  var chk = e.target.closest(".study-chk");
+  if(chk){
+    var scode = chk.dataset.code;
+    if(chk.checked) studied.add(scode); else studied.delete(scode);
+    saveStudied();
+    return;
+  }
   // 헤더 정렬
   var th = e.target.closest("th[data-sort]");
   if(th){ thSort(th.dataset.sort); return; }
@@ -311,6 +326,7 @@ document.addEventListener("click", function(e){
 var GH_OWNER = "whysosary-dot";
 var GH_REPO  = "kospi-kosdaq-dashboard";
 var GH_FILE  = "favs.json";
+var GH_FILE_STUDIED = "studied.json";
 var GH_API   = "https://api.github.com/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + GH_FILE;
 
 function getToken(){ return localStorage.getItem("dart_gh_token") || localStorage.getItem("sv_github_pat") || ""; }
@@ -323,16 +339,17 @@ function setSyncStatus(state, msg){
   if(state !== "loading") setTimeout(function(){ el.textContent=""; el.className="sync-status"; }, 3000);
 }
 
-async function ghGet(){
-  var r = await fetch(GH_API, {headers:{Authorization:"token "+getToken(), Accept:"application/vnd.github.v3+json"}});
+function ghUrl(file){ return "https://api.github.com/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + (file || GH_FILE); }
+async function ghGet(file){
+  var r = await fetch(ghUrl(file), {headers:{Authorization:"token "+getToken(), Accept:"application/vnd.github.v3+json"}});
   if(r.status === 404) return null;
   if(!r.ok) throw new Error("GitHub GET 실패: " + r.status);
   return r.json();
 }
-async function ghPut(content64, sha){
-  var body = {message:"sync favs", content:content64};
+async function ghPut(file, content64, sha, message){
+  var body = {message: message || "sync", content:content64};
   if(sha) body.sha = sha;
-  var r = await fetch(GH_API, {method:"PUT", headers:{Authorization:"token "+getToken(), Accept:"application/vnd.github.v3+json", "Content-Type":"application/json"}, body:JSON.stringify(body)});
+  var r = await fetch(ghUrl(file), {method:"PUT", headers:{Authorization:"token "+getToken(), Accept:"application/vnd.github.v3+json", "Content-Type":"application/json"}, body:JSON.stringify(body)});
   if(!r.ok) throw new Error("GitHub PUT 실패: " + r.status);
   return r.json();
 }
@@ -341,9 +358,10 @@ function b64dec(str){ return decodeURIComponent(escape(atob(str))); }
 
 async function ghPushCore(){
   if(!getToken()) throw new Error("PAT 미설정");
-  var remote = await ghGet();
-  var sha = remote ? remote.sha : undefined;
-  await ghPut(b64enc(JSON.stringify([...favs])), sha);
+  var rf = await ghGet(GH_FILE);
+  await ghPut(GH_FILE, b64enc(JSON.stringify([...favs])), rf ? rf.sha : undefined, "sync favs");
+  var rs = await ghGet(GH_FILE_STUDIED);
+  await ghPut(GH_FILE_STUDIED, b64enc(JSON.stringify([...studied])), rs ? rs.sha : undefined, "sync studied");
 }
 
 /* ── Stock Valuation 대시보드 통합 커밋 (iframe 내장 시) ── */
@@ -370,11 +388,16 @@ async function syncFavs(direction){
       await ghPushCore();
       setSyncStatus("ok", "☁️ 업로드 완료");
     } else {
-      var remote = await ghGet();
+      var remote = await ghGet(GH_FILE);
       if(!remote){ setSyncStatus("ok","원격 데이터 없음"); return; }
       var remoteFavs = JSON.parse(b64dec(remote.content.replace(/\n/g,"")));
       favs = new Set(remoteFavs);
-      saveFavs(); updateFavCount(); updateBothCount(); render();
+      saveFavs();
+      try {
+        var remoteS = await ghGet(GH_FILE_STUDIED);
+        if(remoteS){ studied = new Set(JSON.parse(b64dec(remoteS.content.replace(/\n/g,"")))); saveStudied(); }
+      } catch(_e){}
+      updateFavCount(); updateBothCount(); render();
       setSyncStatus("ok", "☁️ 다운로드 완료");
     }
   } catch(e){ setSyncStatus("err", e.message); }
@@ -402,7 +425,7 @@ updateBothCount();
 var _savedScrollY = restoreState();
 applyFilter();
 if(_savedScrollY) setTimeout(function(){ window.scrollTo(0, _savedScrollY); }, 100);
-autoLoadFavs();
+if(typeof autoLoadFavs === "function") autoLoadFavs();
 
 </script>
 </body>
