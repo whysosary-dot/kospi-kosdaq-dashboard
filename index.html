@@ -69,7 +69,7 @@ a.dart-link:hover{color:#e85c0d;text-decoration:underline}
   <h1>📊 KOSPI/KOSDAQ 5분기 실적 <small>2025Q1 ~ 2026Q1 · DART 공시 기준</small></h1>
   <div class="sync-row">
     <span class="sync-status" id="sync-status"></span>
-    <button class="ctrl-el" onclick="syncFavs('push')" title="현재 즐겨찾기를 GitHub에 저장">☁️↑ 저장</button>
+    <!-- 즐겨찾기/공부함 커밋은 대시보드 ☁️커밋&푸시 버튼으로 통합 -->
     <button class="ctrl-el" onclick="showTokenModal()" title="GitHub 토큰 설정">⚙️</button>
   </div>
 </header>
@@ -233,6 +233,8 @@ function applyFilter(){
     if(q && d.corp_name.toLowerCase().indexOf(q) === -1 && d.stock_code.indexOf(q) === -1) return false;
     return true;
   });
+  // 정렬 유지: 필터가 바뀌어도(복원 포함) 현재 정렬 기준 재적용
+  if(sortK) filtered.sort(function(a,b){ return cmpFn(a,b,sortK,sortD); });
   render();
 }
 
