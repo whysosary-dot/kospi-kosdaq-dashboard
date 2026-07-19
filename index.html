@@ -403,6 +403,29 @@ async function syncFavs(direction){
   } catch(e){ setSyncStatus("err", e.message); }
 }
 
+// 로드 시 원격 즐겨찾기/공부함 자동 다운로드 — 로컬과 합집합 병합 (손실 없음)
+async function autoLoadFavs(){
+  if(!getToken()) return;
+  try{
+    var remote = await ghGet(GH_FILE);
+    if(remote){
+      var rf = JSON.parse(b64dec(remote.content.replace(/\n/g,"")));
+      var before = favs.size;
+      rf.forEach(function(c){ favs.add(c); });
+      if(favs.size !== before) saveFavs();
+    }
+    var remoteS = await ghGet(GH_FILE_STUDIED);
+    if(remoteS){
+      var rs = JSON.parse(b64dec(remoteS.content.replace(/\n/g,"")));
+      var beforeS = studied.size;
+      rs.forEach(function(c){ studied.add(c); });
+      if(studied.size !== beforeS) saveStudied();
+    }
+    updateFavCount(); updateBothCount();
+    if(market === "FAV" || market === "BOTH") applyFilter(); else render();
+  }catch(_e){}
+}
+
 // ── 토큰 모달 ────────────────────────────────────────────────
 function showTokenModal(){
   document.getElementById("token-input").value = getToken();
